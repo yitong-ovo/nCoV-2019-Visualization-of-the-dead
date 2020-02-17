@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>nCov-2019_Dead_Names</title>
+    <script src="ChineseName.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="mainCanvas">
+    </canvas>
+
+    <script>
+        var canvasHTML = document.getElementById("mainCanvas");
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        function random_location() {
+            blank = 100
+            maximum = width - blank*2
+            minimum = blank
+            random_width = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+            maximum = height - blank
+            random_height = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+            return [random_width, random_height]
+        }
+
+        canvasHTML.width = window.innerWidth;
+        canvasHTML.height = window.innerHeight;
+        var ctx = canvasHTML.getContext("2d");
+        ctx.font = "15px Arial";
+
+        names = []
+        death_toll = 1772
+
+        ctx.font = "18px Arial";
+        ctx.fillText('GitHub/yitong-ovo', width-150, height-10)
+        ctx.font = "15px Arial";
+
+        var a = setInterval(() => {
+            if (names.length+1 > death_toll) {
+                clearInterval(a)
+                console.log("STOP!");
+                ctx.fillStyle = "#FF0000";
+                ctx.font = "180px Arial";
+                ctx.fillText('END.', width*0.5, height*0.5)
+            } else {
+                if (Math.floor(Math.random() * 20) === 0) {
+                    while (true) {
+                        quantity = Math.floor(Math.random() * (1 - names.length + 3)) + names.length
+                        // quantity = 
+                        if(quantity > 20){
+                            continue; 
+                        }else if(quantity+names.length < death_toll){
+                            break;
+                        }else if (death_toll - names.length < 10){
+                            quantity = death_toll - names.length;
+                            break;
+                        }
+                        console.log('gen quantity:'+quantity);    
+                    }
+                    
+                    console.log("quantity: " + quantity);
+                    tmp_names = []
+                    for (let index = 0; index < quantity; index++) {
+                        tmp_names.push({
+                            name: ChineseName.random(),
+                            local: random_location()
+                        })
+                    }
+
+                    for (let index = 0; index < tmp_names.length; index++) {
+                        const name = tmp_names[index];
+                        ctx.fillText(name.name, name.local[0], name.local[1])
+                        if(names.length > 0){
+                            lastlocal = names[names.length - 1].local
+                            ctx.beginPath();
+                            ctx.moveTo(lastlocal[0], lastlocal[1]);
+                            ctx.lineTo(name.local[0], name.local[1]);
+                            ctx.stroke();
+                        }
+                    }
+                    names = names.concat(tmp_names)
+                    console.log("====");
+                    console.log(tmp_names.length);
+                    console.log(names.length);
+                    ctx.fillStyle = "#FF0000";
+                    ctx.fillRect(0, height-80, 140, height-5);
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillText('新增死亡人数: '+tmp_names.length, 10, height-50)
+                    ctx.fillText('总死亡人数: '+names.length, 10, height-20)
+                    ctx.fillStyle = "#0000FF";
+                    ctx.fillStyle = "#000000";
+                    console.log("====");
+                }
+            }
+        }, 10);
+
+
+    </script>
+</body>
+
+</html>
