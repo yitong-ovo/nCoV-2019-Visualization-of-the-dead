@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>nCov-2019_Dead_Names</title>
+    <title>nCov-2019-Visualization-of-the-dead</title>
     <script src="ChineseName.js"></script>
     <style>
         html,
@@ -21,91 +21,113 @@
 
     <script>
         var canvasHTML = document.getElementById("mainCanvas");
-        width = window.innerWidth;
-        height = window.innerHeight;
+        // 获取窗口的高度和宽度
+        windowWidth = window.innerWidth;
+        windowHeight = window.innerHeight;
 
+        // 生成随机的座标
         function random_location() {
-            blank = 100
-            maximum = width - blank*2
+            // 四周的留白
+            const blank = 100
+            // 最大宽度特殊处理一下，因为字符定位点的位置不在中间。
+            maximum = windowWidth - blank * 2
             minimum = blank
+            // 随机宽度座标
             random_width = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
-            maximum = height - blank
+            maximum = windowHeight - blank
+            // 随机高度座标
             random_height = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
             return [random_width, random_height]
         }
 
+        // 设计画布尺寸
         canvasHTML.width = window.innerWidth;
         canvasHTML.height = window.innerHeight;
         var ctx = canvasHTML.getContext("2d");
+        // 文本的大小和字体
         ctx.font = "15px Arial";
 
+        // 存储生成的人名和座标
         names = []
-        death_toll = 1772
+        // 当前死亡人数
+        death_toll = 1870
 
-        ctx.font = "18px Arial";
-        ctx.fillText('GitHub/yitong-ovo', width-150, height-10)
-        ctx.font = "15px Arial";
+        // 版权信息(?)
+        ctx.font = "18px Arial"; // 省事就直接设置全局尺寸了。
+        ctx.fillText('GitHub/yitong-ovo', windowWidth - 150, windowHeight - 10)
+        ctx.font = "15px Arial"; 
 
-        var a = setInterval(() => {
-            if (names.length+1 > death_toll) {
-                clearInterval(a)
+        // 生成的触发是基于计时器 + 抽奖(得到符合的随机数)。
+        var generator_trigger = setInterval(() => {
+            // 判断当前生成数量是否超过总死亡人数
+            if (names.length + 1 > death_toll) {
+                clearInterval(generator_trigger)
                 console.log("STOP!");
                 ctx.fillStyle = "#FF0000";
                 ctx.font = "180px Arial";
-                ctx.fillText('END.', width*0.5, height*0.5)
+                ctx.fillText('END.', windowWidth * 0.5, windowHeight * 0.5)
             } else {
                 if (Math.floor(Math.random() * 20) === 0) {
                     while (true) {
-                        quantity = Math.floor(Math.random() * (1 - names.length + 3)) + names.length
-                        // quantity = 
-                        if(quantity > 20){
-                            continue; 
-                        }else if(quantity+names.length < death_toll){
+                        // 随机生成死亡人数
+
+                        // 单次最大生成人数
+                        max = 20
+                        // https://stackoverflow.com/questions/1527803/generating-random-whole-numbers-in-javascript-in-a-specific-range
+                        new_deaths = Math.floor(Math.random() * (1 - max + 3)) + max
+                        console.log('生成死亡人数中:' + new_deaths);
+                        // 生成的数量和已经生成的数量不能超过总死亡人数
+                        if (new_deaths + names.length < death_toll) {
                             break;
-                        }else if (death_toll - names.length < 10){
-                            quantity = death_toll - names.length;
+                        // 如果剩余不到十个人的话，那就直接填充插值
+                        } else if (death_toll - names.length < 10) {
+                            new_deaths = death_toll - names.length;
                             break;
                         }
-                        console.log('gen quantity:'+quantity);    
                     }
-                    
-                    console.log("quantity: " + quantity);
+
+                    console.log("新增死亡人数: " + new_deaths);
+                    // 存储临时生成的人的数据
                     tmp_names = []
-                    for (let index = 0; index < quantity; index++) {
+                    for (let index = 0; index < new_deaths; index++) {
                         tmp_names.push({
                             name: ChineseName.random(),
                             local: random_location()
                         })
                     }
-
+                    // 绘制新增死亡的人在画布上
                     for (let index = 0; index < tmp_names.length; index++) {
                         const name = tmp_names[index];
+                        // 绘制姓名
                         ctx.fillText(name.name, name.local[0], name.local[1])
-                        if(names.length > 0){
+                        if (names.length > 0) {
+                            // 从总死亡人中的最后一人划线到新增的姓名上
                             lastlocal = names[names.length - 1].local
                             ctx.beginPath();
-                            ctx.moveTo(lastlocal[0], lastlocal[1]);
-                            ctx.lineTo(name.local[0], name.local[1]);
+                            ctx.moveTo(lastlocal[0] - 2, lastlocal[1] - 6);
+                            ctx.lineTo(name.local[0] - 2, name.local[1] - 6);
                             ctx.stroke();
                         }
                     }
+                    // 添加临问人数到完整死亡列表内
                     names = names.concat(tmp_names)
                     console.log("====");
                     console.log(tmp_names.length);
                     console.log(names.length);
+                    // 绘制右下角的统计数据
                     ctx.fillStyle = "#FF0000";
-                    ctx.fillRect(0, height-80, 140, height-5);
+                    ctx.fillRect(0, windowHeight - 90, 280, windowHeight - 5);
                     ctx.fillStyle = "#FFFFFF";
-                    ctx.fillText('新增死亡人数: '+tmp_names.length, 10, height-50)
-                    ctx.fillText('总死亡人数: '+names.length, 10, height-20)
+                    ctx.font = "30px Arial";
+                    ctx.fillText('新增死亡人数: ' + tmp_names.length, 10, windowHeight - 55)
+                    ctx.fillText('总死亡人数: ' + names.length, 10, windowHeight - 20)
+                    ctx.font = "15px Arial";
                     ctx.fillStyle = "#0000FF";
                     ctx.fillStyle = "#000000";
                     console.log("====");
                 }
             }
         }, 10);
-
-
     </script>
 </body>
 
